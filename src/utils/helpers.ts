@@ -2,13 +2,13 @@ export const getStatusColor = (status?: string) => {
   const upperStatus = status?.toUpperCase();
   switch (upperStatus) {
     case 'SUCCESS':
-      return { bgColor: '#dcfce7', textColor: '#166534', borderColor: '#86efac' };
+      return {bgColor: '#dcfce7', textColor: '#166534', borderColor: '#86efac'};
     case 'PENDING':
-      return { bgColor: '#fef3c7', textColor: '#b45309', borderColor: '#fcd34d' };
+      return {bgColor: '#fef3c7', textColor: '#b45309', borderColor: '#fcd34d'};
     case 'FAILED':
-      return { bgColor: '#fee2e2', textColor: '#991b1b', borderColor: '#fca5a5' };
+      return {bgColor: '#fee2e2', textColor: '#991b1b', borderColor: '#fca5a5'};
     default:
-      return { bgColor: '#f3f4f6', textColor: '#374151', borderColor: '#d1d5db' };
+      return {bgColor: '#f3f4f6', textColor: '#374151', borderColor: '#d1d5db'};
   }
 };
 
@@ -16,13 +16,13 @@ export const getStatusBadgeColor = (status?: string) => {
   const upperStatus = status?.toUpperCase();
   switch (upperStatus) {
     case 'SUCCESS':
-      return { backgroundColor: '#dcfce7', color: '#166534' };
+      return {backgroundColor: '#dcfce7', color: '#166534'};
     case 'PENDING':
-      return { backgroundColor: '#fef3c7', color: '#b45309' };
+      return {backgroundColor: '#fef3c7', color: '#b45309'};
     case 'FAILED':
-      return { backgroundColor: '#fee2e2', color: '#991b1b' };
+      return {backgroundColor: '#fee2e2', color: '#991b1b'};
     default:
-      return { backgroundColor: '#f3f4f6', color: '#374151' };
+      return {backgroundColor: '#f3f4f6', color: '#374151'};
   }
 };
 

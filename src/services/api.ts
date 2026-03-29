@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://10.0.2.2:8080/api/v1';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -47,7 +47,7 @@ export interface PaymentResponse {
 export const getTransactions = async (page: number = 1) => {
   try {
     const response = await apiClient.get<ApiResponse>(
-      `/transactions?page=${page}&limit=10`
+      `/transactions?page=${page}&limit=10`,
     );
     return response.data;
   } catch (error) {
@@ -72,7 +72,7 @@ export const generateQR = async (
   merchantId: string,
   trxId: string,
   amount: string,
-  signature: string
+  signature: string,
 ) => {
   try {
     const response = await apiClient.post<QRResponse>(
@@ -90,7 +90,7 @@ export const generateQR = async (
         headers: {
           'X-SIGNATURE': signature,
         },
-      }
+      },
     );
     return response.data;
   } catch (error) {
@@ -101,7 +101,7 @@ export const generateQR = async (
 export const processPayment = async (
   referenceNo: string,
   amount: string,
-  signature: string
+  signature: string,
 ) => {
   try {
     const response = await apiClient.post<PaymentResponse>(
@@ -119,7 +119,7 @@ export const processPayment = async (
         headers: {
           'X-SIGNATURE': signature,
         },
-      }
+      },
     );
     return response.data;
   } catch (error) {
@@ -130,7 +130,7 @@ export const processPayment = async (
 export const searchTransaction = async (referenceNo: string) => {
   try {
     const response = await apiClient.get<Transaction>(
-      `/tracker/${referenceNo}`
+      `/tracker/${referenceNo}`,
     );
     return response.data;
   } catch (error) {

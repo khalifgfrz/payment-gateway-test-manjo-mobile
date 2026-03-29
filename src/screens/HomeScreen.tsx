@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,14 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { getTransactions, Transaction, ApiResponse } from '../services/api';
-import { formatCurrency, formatDate, getStatusBadgeColor, getStatusIcon } from '../utils/helpers';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {getTransactions, Transaction, ApiResponse} from '../services/api';
+import {
+  formatCurrency,
+  formatDate,
+  getStatusBadgeColor,
+  getStatusIcon,
+} from '../utils/helpers';
 
 const styles = StyleSheet.create({
   container: {
@@ -206,7 +211,9 @@ const HomeScreen = () => {
       setData(response.data || []);
       setMeta(response.meta);
     } catch (err) {
-      setError('Gagal memuat transaksi. Pastikan server berjalan di localhost:8080');
+      setError(
+        'Gagal memuat transaksi. Pastikan server berjalan di localhost:8080',
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -222,7 +229,7 @@ const HomeScreen = () => {
     loadTransactions(1);
   };
 
-  const filteredData = data.filter((item) => {
+  const filteredData = data.filter(item => {
     if (!filter) return true;
     const searchLower = filter.toLowerCase();
     return (
@@ -235,32 +242,39 @@ const HomeScreen = () => {
 
   const stats = {
     total: meta.total,
-    success: data.filter((t) => t.status?.toUpperCase() === 'SUCCESS').length,
-    pending: data.filter((t) => t.status?.toUpperCase() === 'PENDING').length,
-    failed: data.filter((t) => t.status?.toUpperCase() === 'FAILED').length,
+    success: data.filter(t => t.status?.toUpperCase() === 'SUCCESS').length,
+    pending: data.filter(t => t.status?.toUpperCase() === 'PENDING').length,
+    failed: data.filter(t => t.status?.toUpperCase() === 'FAILED').length,
   };
 
-  const renderTransaction = ({ item }: { item: Transaction }) => (
+  const renderTransaction = ({item}: {item: Transaction}) => (
     <View style={styles.transactionItem}>
       <View style={styles.transactionRow}>
         <Text style={styles.transactionId} numberOfLines={1}>
           {item.reference_no || 'N/A'}
         </Text>
-        <Text style={styles.transactionAmount}>{formatCurrency(item.amount)}</Text>
+        <Text style={styles.transactionAmount}>
+          {formatCurrency(item.amount)}
+        </Text>
       </View>
       <Text style={styles.transactionMerchant}>{item.merchant_id}</Text>
       <View style={styles.transactionFooter}>
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: getStatusBadgeColor(item.status).backgroundColor },
-          ]}
-        >
-          <Text style={[styles.statusText, { color: getStatusBadgeColor(item.status).color }]}>
+            {backgroundColor: getStatusBadgeColor(item.status).backgroundColor},
+          ]}>
+          <Text
+            style={[
+              styles.statusText,
+              {color: getStatusBadgeColor(item.status).color},
+            ]}>
             {getStatusIcon(item.status)} {item.status || 'Unknown'}
           </Text>
         </View>
-        <Text style={styles.transactionDate}>{formatDate(item.transaction_date)}</Text>
+        <Text style={styles.transactionDate}>
+          {formatDate(item.transaction_date)}
+        </Text>
       </View>
     </View>
   );
@@ -286,23 +300,30 @@ const HomeScreen = () => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.statsContainer}
-      >
-        <View style={[styles.statCard, { backgroundColor: '#dbeafe' }]}>
+        style={styles.statsContainer}>
+        <View style={[styles.statCard, {backgroundColor: '#dbeafe'}]}>
           <Text style={styles.statLabel}>Total</Text>
-          <Text style={[styles.statValue, { color: '#2563eb' }]}>{stats.total}</Text>
+          <Text style={[styles.statValue, {color: '#2563eb'}]}>
+            {stats.total}
+          </Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#dcfce7' }]}>
+        <View style={[styles.statCard, {backgroundColor: '#dcfce7'}]}>
           <Text style={styles.statLabel}>Sukses</Text>
-          <Text style={[styles.statValue, { color: '#16a34a' }]}>{stats.success}</Text>
+          <Text style={[styles.statValue, {color: '#16a34a'}]}>
+            {stats.success}
+          </Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#fef3c7' }]}>
+        <View style={[styles.statCard, {backgroundColor: '#fef3c7'}]}>
           <Text style={styles.statLabel}>Pending</Text>
-          <Text style={[styles.statValue, { color: '#ca8a04' }]}>{stats.pending}</Text>
+          <Text style={[styles.statValue, {color: '#ca8a04'}]}>
+            {stats.pending}
+          </Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: '#fee2e2' }]}>
+        <View style={[styles.statCard, {backgroundColor: '#fee2e2'}]}>
           <Text style={styles.statLabel}>Gagal</Text>
-          <Text style={[styles.statValue, { color: '#dc2626' }]}>{stats.failed}</Text>
+          <Text style={[styles.statValue, {color: '#dc2626'}]}>
+            {stats.failed}
+          </Text>
         </View>
       </ScrollView>
 
@@ -327,7 +348,9 @@ const HomeScreen = () => {
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>⚠️ {error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={() => loadTransactions(1)}>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => loadTransactions(1)}>
             <Text style={styles.retryButtonText}>Coba Lagi</Text>
           </TouchableOpacity>
         </View>
@@ -344,11 +367,13 @@ const HomeScreen = () => {
         <FlatList
           data={filteredData}
           renderItem={renderTransaction}
-          keyExtractor={(item) => item.id || item.reference_no || Math.random().toString()}
+          keyExtractor={item =>
+            item.id || item.reference_no || Math.random().toString()
+          }
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          contentContainerStyle={{ paddingBottom: 16 }}
+          contentContainerStyle={{paddingBottom: 16}}
           scrollEnabled={true}
         />
       )}

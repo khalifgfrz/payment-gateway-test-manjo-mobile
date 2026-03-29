@@ -1,96 +1,108 @@
-import React, {useEffect} from 'react';
-import {
-  // View,
-  StatusBar,
-  StyleSheet,
-  SafeAreaView,
-} from 'react-native';
+import React from 'react';
+import {SafeAreaView, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {Ionicons} from '@expo/vector-icons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-// Screens
 import HomeScreen from './src/screens/HomeScreen';
 import GenerateQRScreen from './src/screens/GenerateQRScreen';
 import PaymentScreen from './src/screens/PaymentScreen';
 import TrackerScreen from './src/screens/TrackerScreen';
 
-const Tab = createBottomTabNavigator();
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-});
-
-const getTabBarIcon = ({focused, color, size, route}: any) => {
-  let iconName: string = 'home';
-
-  if (route.name === 'Home') {
-    iconName = focused ? 'list' : 'list-outline';
-  } else if (route.name === 'GenerateQR') {
-    iconName = focused ? 'qr-code' : 'qr-code-outline';
-  } else if (route.name === 'Payment') {
-    iconName = focused ? 'card' : 'card-outline';
-  } else if (route.name === 'Tracker') {
-    iconName = focused ? 'search' : 'search-outline';
-  }
-
-  return <Ionicons name={iconName as any} size={size} color={color} />;
+type RootTabParamList = {
+  Home: undefined;
+  GenerateQR: undefined;
+  Payment: undefined;
+  Tracker: undefined;
 };
 
-export default function App() {
-  useEffect(() => {
-    StatusBar.setBarStyle('light-content');
-  }, []);
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
+function App(): React.JSX.Element {
   return (
-    <NavigationContainer>
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView style={{flex: 1, backgroundColor: '#ffffff'}}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <NavigationContainer>
         <Tab.Navigator
           screenOptions={({route}) => ({
-            headerShown: false,
-            tabBarIcon: ({focused, color, size}) =>
-              getTabBarIcon({focused, color, size, route}),
-            tabBarActiveTintColor: '#2563eb',
-            tabBarInactiveTintColor: '#94a3b8',
-            tabBarStyle: {
-              backgroundColor: '#ffffff',
-              borderTopColor: '#e2e8f0',
-              borderTopWidth: 1,
-              paddingBottom: 5,
-              paddingTop: 5,
-              height: 60,
+            headerShown: true,
+            headerStyle: {
+              backgroundColor: '#007AFF',
+              borderBottomWidth: 0,
+              elevation: 3,
             },
-            tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '500',
-              marginTop: 5,
+            headerTitleStyle: {
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: '600',
+            },
+            headerTintColor: '#fff',
+            tabBarActiveTintColor: '#007AFF',
+            tabBarInactiveTintColor: '#999',
+            tabBarStyle: {
+              backgroundColor: '#fff',
+              borderTopWidth: 1,
+              borderTopColor: '#e0e0e0',
+              paddingBottom: 5,
+            },
+            tabBarIcon: ({color, size}) => {
+              let iconName: string = 'home';
+
+              if (route.name === 'Home') {
+                iconName = 'home';
+              } else if (route.name === 'GenerateQR') {
+                iconName = 'qrcode';
+              } else if (route.name === 'Payment') {
+                iconName = 'credit-card';
+              } else if (route.name === 'Tracker') {
+                iconName = 'magnify';
+              }
+
+              return (
+                <MaterialCommunityIcons
+                  name={iconName}
+                  size={size}
+                  color={color}
+                />
+              );
             },
           })}>
           <Tab.Screen
             name="Home"
             component={HomeScreen}
-            options={{title: 'Semua Transaksi'}}
+            options={{
+              title: 'Dashboard',
+              tabBarLabel: 'Home',
+            }}
           />
           <Tab.Screen
             name="GenerateQR"
             component={GenerateQRScreen}
-            options={{title: 'Generate QR'}}
+            options={{
+              title: 'Generate QR',
+              tabBarLabel: 'Generate QR',
+            }}
           />
           <Tab.Screen
             name="Payment"
             component={PaymentScreen}
-            options={{title: 'Pembayaran'}}
+            options={{
+              title: 'Payment',
+              tabBarLabel: 'Payment',
+            }}
           />
           <Tab.Screen
             name="Tracker"
             component={TrackerScreen}
-            options={{title: 'Tracking'}}
+            options={{
+              title: 'Tracker',
+              tabBarLabel: 'Tracker',
+            }}
           />
         </Tab.Navigator>
-      </SafeAreaView>
-    </NavigationContainer>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
+
+export default App;

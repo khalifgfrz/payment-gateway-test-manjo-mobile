@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,14 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { searchTransaction, Transaction } from '../services/api';
-import { formatCurrency, formatDate, getStatusBadgeColor, getStatusIcon } from '../utils/helpers';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {searchTransaction, Transaction} from '../services/api';
+import {
+  formatCurrency,
+  formatDate,
+  getStatusBadgeColor,
+  getStatusIcon,
+} from '../utils/helpers';
 
 const styles = StyleSheet.create({
   container: {
@@ -43,7 +48,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -78,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#cbd5e1',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -224,8 +229,7 @@ const TrackerScreen = () => {
           <TouchableOpacity
             style={styles.searchButton}
             onPress={handleSearch}
-            disabled={loading}
-          >
+            disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#ffffff" size="small" />
             ) : (
@@ -254,15 +258,16 @@ const TrackerScreen = () => {
               <View
                 style={[
                   styles.statusBadge,
-                  { backgroundColor: getStatusBadgeColor(result.status).backgroundColor },
-                ]}
-              >
+                  {
+                    backgroundColor: getStatusBadgeColor(result.status)
+                      .backgroundColor,
+                  },
+                ]}>
                 <Text
                   style={[
                     styles.statusText,
-                    { color: getStatusBadgeColor(result.status).color },
-                  ]}
-                >
+                    {color: getStatusBadgeColor(result.status).color},
+                  ]}>
                   {getStatusIcon(result.status)} {result.status || 'Unknown'}
                 </Text>
               </View>
@@ -270,17 +275,22 @@ const TrackerScreen = () => {
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Reference No</Text>
-              <Text style={styles.detailValue}>{result.reference_no || '-'}</Text>
+              <Text style={styles.detailValue}>
+                {result.reference_no || '-'}
+              </Text>
             </View>
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Merchant ID</Text>
-              <Text style={styles.detailValue}>{result.merchant_id || '-'}</Text>
+              <Text style={styles.detailValue}>
+                {result.merchant_id || '-'}
+              </Text>
             </View>
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Amount</Text>
-              <Text style={[styles.detailValue, { color: '#2563eb', fontSize: 16 }]}>
+              <Text
+                style={[styles.detailValue, {color: '#2563eb', fontSize: 16}]}>
                 {formatCurrency(result.amount) || '-'}
               </Text>
             </View>
@@ -292,7 +302,9 @@ const TrackerScreen = () => {
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Partner Ref</Text>
-              <Text style={styles.detailValue}>{result.partner_reference_no || '-'}</Text>
+              <Text style={styles.detailValue}>
+                {result.partner_reference_no || '-'}
+              </Text>
             </View>
 
             <View style={styles.detailRow}>
@@ -302,12 +314,16 @@ const TrackerScreen = () => {
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Transaction Date</Text>
-              <Text style={styles.detailValue}>{formatDate(result.transaction_date)}</Text>
+              <Text style={styles.detailValue}>
+                {formatDate(result.transaction_date)}
+              </Text>
             </View>
 
             <View>
               <Text style={styles.detailLabel}>Paid Date</Text>
-              <Text style={styles.detailValue}>{formatDate(result.paid_date)}</Text>
+              <Text style={styles.detailValue}>
+                {formatDate(result.paid_date)}
+              </Text>
             </View>
           </View>
         )}

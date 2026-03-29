@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import * as Share from 'react-native-share';
-import { generateSignature, generateQR, QRResponse } from '../services/api';
+import Share from 'react-native-share';
+import {generateSignature, generateQR, QRResponse} from '../services/api';
 
 const styles = StyleSheet.create({
   container: {
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -215,7 +215,7 @@ const GenerateQRScreen = () => {
         form.merchantId,
         form.trx_id,
         form.amount,
-        sig.signature
+        sig.signature,
       );
 
       setResult(qrResult);
@@ -229,7 +229,7 @@ const GenerateQRScreen = () => {
   const handleDownload = async () => {
     try {
       if (qrRef.current) {
-        const qrImage = await qrRef.current.toDataURL({ type: 'image/png' });
+        const qrImage = await qrRef.current.toDataURL({type: 'image/png'});
         const fileName = `QR-${result?.referenceNo || 'Code'}.png`;
 
         await Share.open({
@@ -274,8 +274,8 @@ const GenerateQRScreen = () => {
                 style={styles.input}
                 placeholder="ex: PRN-2024-001"
                 value={form.partnerReferenceNo}
-                onChangeText={(value) =>
-                  setForm({ ...form, partnerReferenceNo: value })
+                onChangeText={value =>
+                  setForm({...form, partnerReferenceNo: value})
                 }
                 placeholderTextColor="#cbd5e1"
               />
@@ -287,7 +287,7 @@ const GenerateQRScreen = () => {
                 style={styles.input}
                 placeholder="ex: MERCHANT123"
                 value={form.merchantId}
-                onChangeText={(value) => setForm({ ...form, merchantId: value })}
+                onChangeText={value => setForm({...form, merchantId: value})}
                 placeholderTextColor="#cbd5e1"
               />
             </View>
@@ -298,7 +298,7 @@ const GenerateQRScreen = () => {
                 style={styles.input}
                 placeholder="ex: TRX-2024-001"
                 value={form.trx_id}
-                onChangeText={(value) => setForm({ ...form, trx_id: value })}
+                onChangeText={value => setForm({...form, trx_id: value})}
                 placeholderTextColor="#cbd5e1"
               />
             </View>
@@ -309,7 +309,7 @@ const GenerateQRScreen = () => {
                 style={styles.input}
                 placeholder="ex: 100000"
                 value={form.amount}
-                onChangeText={(value) => setForm({ ...form, amount: value })}
+                onChangeText={value => setForm({...form, amount: value})}
                 keyboardType="numeric"
                 placeholderTextColor="#cbd5e1"
               />
@@ -324,8 +324,7 @@ const GenerateQRScreen = () => {
             <TouchableOpacity
               style={styles.button}
               onPress={handleGenerate}
-              disabled={loading}
-            >
+              disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#ffffff" />
               ) : (
@@ -359,7 +358,9 @@ const GenerateQRScreen = () => {
                 <Text style={styles.buttonText}>Download QR Code</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.secondaryButton} onPress={handleReset}>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={handleReset}>
                 <Text style={styles.secondaryButtonText}>Generate Another</Text>
               </TouchableOpacity>
             </View>

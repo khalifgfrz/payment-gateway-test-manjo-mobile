@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,12 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { generateSignature, processPayment, PaymentResponse } from '../services/api';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {
+  generateSignature,
+  processPayment,
+  PaymentResponse,
+} from '../services/api';
 
 const styles = StyleSheet.create({
   container: {
@@ -41,7 +45,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
@@ -178,15 +182,13 @@ const PaymentScreen = () => {
       const paymentResult = await processPayment(
         form.referenceNo,
         form.amount,
-        sig.signature
+        sig.signature,
       );
 
       setMessage(paymentResult);
-      setForm({ referenceNo: '', amount: '' });
+      setForm({referenceNo: '', amount: ''});
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || 'Gagal memproses pembayaran'
-      );
+      setError(err.response?.data?.message || 'Gagal memproses pembayaran');
     } finally {
       setLoading(false);
     }
@@ -211,7 +213,7 @@ const PaymentScreen = () => {
               style={styles.input}
               placeholder="Masukkan nomor referensi"
               value={form.referenceNo}
-              onChangeText={(value) => setForm({ ...form, referenceNo: value })}
+              onChangeText={value => setForm({...form, referenceNo: value})}
               placeholderTextColor="#cbd5e1"
             />
           </View>
@@ -222,7 +224,7 @@ const PaymentScreen = () => {
               style={styles.input}
               placeholder="Masukkan jumlah pembayaran"
               value={form.amount}
-              onChangeText={(value) => setForm({ ...form, amount: value })}
+              onChangeText={value => setForm({...form, amount: value})}
               keyboardType="numeric"
               placeholderTextColor="#cbd5e1"
             />
@@ -243,8 +245,7 @@ const PaymentScreen = () => {
                   backgroundColor: isSuccess ? '#dcfce7' : '#fef3c7',
                   borderColor: isSuccess ? '#86efac' : '#fcd34d',
                 },
-              ]}
-            >
+              ]}>
               <Ionicons
                 name={isSuccess ? 'checkmark-circle' : 'warning'}
                 size={20}
@@ -254,18 +255,16 @@ const PaymentScreen = () => {
                 <Text
                   style={[
                     styles.successTitle,
-                    { color: isSuccess ? '#166534' : '#b45309' },
-                  ]}
-                >
+                    {color: isSuccess ? '#166534' : '#b45309'},
+                  ]}>
                   {message.responseMessage}
                 </Text>
                 {message.responseCode && (
                   <Text
                     style={[
                       styles.successText,
-                      { color: isSuccess ? '#166534' : '#b45309' },
-                    ]}
-                  >
+                      {color: isSuccess ? '#166534' : '#b45309'},
+                    ]}>
                     Code: {message.responseCode}
                   </Text>
                 )}
@@ -276,8 +275,7 @@ const PaymentScreen = () => {
           <TouchableOpacity
             style={styles.button}
             onPress={handlePay}
-            disabled={loading}
-          >
+            disabled={loading}>
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
