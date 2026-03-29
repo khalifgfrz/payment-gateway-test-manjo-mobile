@@ -1,118 +1,96 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useEffect} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
+  // View,
   StatusBar,
   StyleSheet,
-  Text,
-  useColorScheme,
-  View,
+  SafeAreaView,
 } from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {Ionicons} from '@expo/vector-icons';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// Screens
+import HomeScreen from './src/screens/HomeScreen';
+import GenerateQRScreen from './src/screens/GenerateQRScreen';
+import PaymentScreen from './src/screens/PaymentScreen';
+import TrackerScreen from './src/screens/TrackerScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+const Tab = createBottomTabNavigator();
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
   },
 });
 
-export default App;
+const getTabBarIcon = ({focused, color, size, route}: any) => {
+  let iconName: string = 'home';
+
+  if (route.name === 'Home') {
+    iconName = focused ? 'list' : 'list-outline';
+  } else if (route.name === 'GenerateQR') {
+    iconName = focused ? 'qr-code' : 'qr-code-outline';
+  } else if (route.name === 'Payment') {
+    iconName = focused ? 'card' : 'card-outline';
+  } else if (route.name === 'Tracker') {
+    iconName = focused ? 'search' : 'search-outline';
+  }
+
+  return <Ionicons name={iconName as any} size={size} color={color} />;
+};
+
+export default function App() {
+  useEffect(() => {
+    StatusBar.setBarStyle('light-content');
+  }, []);
+
+  return (
+    <NavigationContainer>
+      <SafeAreaView style={styles.container}>
+        <Tab.Navigator
+          screenOptions={({route}) => ({
+            headerShown: false,
+            tabBarIcon: ({focused, color, size}) =>
+              getTabBarIcon({focused, color, size, route}),
+            tabBarActiveTintColor: '#2563eb',
+            tabBarInactiveTintColor: '#94a3b8',
+            tabBarStyle: {
+              backgroundColor: '#ffffff',
+              borderTopColor: '#e2e8f0',
+              borderTopWidth: 1,
+              paddingBottom: 5,
+              paddingTop: 5,
+              height: 60,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+              marginTop: 5,
+            },
+          })}>
+          <Tab.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{title: 'Semua Transaksi'}}
+          />
+          <Tab.Screen
+            name="GenerateQR"
+            component={GenerateQRScreen}
+            options={{title: 'Generate QR'}}
+          />
+          <Tab.Screen
+            name="Payment"
+            component={PaymentScreen}
+            options={{title: 'Pembayaran'}}
+          />
+          <Tab.Screen
+            name="Tracker"
+            component={TrackerScreen}
+            options={{title: 'Tracking'}}
+          />
+        </Tab.Navigator>
+      </SafeAreaView>
+    </NavigationContainer>
+  );
+}
