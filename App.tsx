@@ -1,10 +1,9 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
-  // View,
-  StatusBar,
+  View,
   StyleSheet,
-  SafeAreaView,
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Ionicons} from '@expo/vector-icons';
@@ -41,10 +40,6 @@ const getTabBarIcon = ({focused, color, size, route}: any) => {
 };
 
 export default function App() {
-  useEffect(() => {
-    StatusBar.setBarStyle('light-content');
-  }, []);
-
   return (
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
