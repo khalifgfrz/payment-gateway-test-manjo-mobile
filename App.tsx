@@ -1,7 +1,8 @@
 import React from 'react';
-import {SafeAreaView, StatusBar} from 'react-native';
+import {StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import HomeScreen from './src/screens/HomeScreen';
@@ -20,40 +21,35 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 function App(): React.JSX.Element {
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#ffffff'}}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaProvider>
+      <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
       <NavigationContainer>
         <Tab.Navigator
           screenOptions={({route}) => ({
-            headerShown: true,
-            headerStyle: {
-              backgroundColor: '#007AFF',
-              borderBottomWidth: 0,
-              elevation: 3,
-            },
-            headerTitleStyle: {
-              color: '#fff',
-              fontSize: 18,
-              fontWeight: '600',
-            },
-            headerTintColor: '#fff',
-            tabBarActiveTintColor: '#007AFF',
-            tabBarInactiveTintColor: '#999',
+            headerShown: false, // Matikan header karena screen punya header sendiri
+            tabBarActiveTintColor: '#2563EB',
+            tabBarInactiveTintColor: '#9CA3AF',
             tabBarStyle: {
-              backgroundColor: '#fff',
+              backgroundColor: '#FFFFFF',
               borderTopWidth: 1,
-              borderTopColor: '#e0e0e0',
-              paddingBottom: 5,
+              borderTopColor: '#E5E7EB',
+              paddingTop: 8,
+              paddingBottom: 8,
+              height: 60,
+            },
+            tabBarLabelStyle: {
+              fontSize: 11,
+              fontWeight: '500',
             },
             tabBarIcon: ({color, size}) => {
               let iconName: string = 'home';
 
               if (route.name === 'Home') {
-                iconName = 'home';
+                iconName = 'view-dashboard-outline';
               } else if (route.name === 'GenerateQR') {
                 iconName = 'qrcode';
               } else if (route.name === 'Payment') {
-                iconName = 'credit-card';
+                iconName = 'credit-card-outline';
               } else if (route.name === 'Tracker') {
                 iconName = 'magnify';
               }
@@ -61,7 +57,7 @@ function App(): React.JSX.Element {
               return (
                 <MaterialCommunityIcons
                   name={iconName}
-                  size={size}
+                  size={24}
                   color={color}
                 />
               );
@@ -71,7 +67,6 @@ function App(): React.JSX.Element {
             name="Home"
             component={HomeScreen}
             options={{
-              title: 'Dashboard',
               tabBarLabel: 'Home',
             }}
           />
@@ -79,7 +74,6 @@ function App(): React.JSX.Element {
             name="GenerateQR"
             component={GenerateQRScreen}
             options={{
-              title: 'Generate QR',
               tabBarLabel: 'Generate QR',
             }}
           />
@@ -87,7 +81,6 @@ function App(): React.JSX.Element {
             name="Payment"
             component={PaymentScreen}
             options={{
-              title: 'Payment',
               tabBarLabel: 'Payment',
             }}
           />
@@ -95,13 +88,12 @@ function App(): React.JSX.Element {
             name="Tracker"
             component={TrackerScreen}
             options={{
-              title: 'Tracker',
               tabBarLabel: 'Tracker',
             }}
           />
         </Tab.Navigator>
       </NavigationContainer>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

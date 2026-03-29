@@ -1,17 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  RefreshControl,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
+  RefreshControl,
+  StatusBar,
+  Platform,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import {getTransactions, Transaction, ApiResponse} from '../services/api';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
+import {getTransactions, Transaction} from '../services/api';
 import {
   formatCurrency,
   formatDate,
@@ -19,277 +20,171 @@ import {
   getStatusIcon,
 } from '../utils/helpers';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  header: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 10,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#e0e7ff',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  statCard: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 6,
-    fontWeight: '500',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  searchContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1e293b',
-    marginLeft: 8,
-  },
-  refreshButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  refreshButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  transactionItem: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2563eb',
-  },
-  transactionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  transactionId: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#1e293b',
-    flex: 1,
-  },
-  transactionAmount: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#2563eb',
-  },
-  transactionMerchant: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 6,
-  },
-  transactionFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  transactionDate: {
-    fontSize: 11,
-    color: '#94a3b8',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#64748b',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  errorContainer: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#fca5a5',
-    borderWidth: 1,
-    marginHorizontal: 16,
-    marginVertical: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-  errorText: {
-    color: '#991b1b',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  retryButton: {
-    marginTop: 10,
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-  },
-  retryButtonText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-});
-
 const HomeScreen = () => {
-  const [data, setData] = useState<Transaction[]>([]);
-  const [meta, setMeta] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    total_pages: 1,
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>('');
-  const [filter, setFilter] = useState('');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<
+    Transaction[]
+  >([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<string>('all');
 
-  const loadTransactions = async (page: number = 1) => {
+  const fetchTransactions = async () => {
     try {
-      setError('');
-      const response = await getTransactions(page);
-      setData(response.data || []);
-      setMeta(response.meta);
-    } catch (err) {
-      setError(
-        'Gagal memuat transaksi. Pastikan server berjalan di localhost:8080',
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      const response = await getTransactions(1);
+      setTransactions(response.data);
+      setFilteredTransactions(response.data);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
     }
   };
 
-  useEffect(() => {
-    loadTransactions();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTransactions();
+    }, []),
+  );
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    loadTransactions(1);
+    await fetchTransactions();
+    setRefreshing(false);
   };
 
-  const filteredData = data.filter(item => {
-    if (!filter) return true;
-    const searchLower = filter.toLowerCase();
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    filterTransactions(text, filter);
+  };
+
+  const filterTransactions = (search: string, status: string) => {
+    let filtered = transactions;
+
+    if (search) {
+      filtered = filtered.filter(
+        t =>
+          t.reference_no?.toLowerCase().includes(search.toLowerCase()) ||
+          t.merchant_id?.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
+
+    if (status !== 'all') {
+      filtered = filtered.filter(t => t.status?.toUpperCase() === status);
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  const getStats = () => {
+    const total = transactions.length;
+    const success = transactions.filter(
+      t => t.status?.toUpperCase() === 'SUCCESS',
+    ).length;
+    const pending = transactions.filter(
+      t => t.status?.toUpperCase() === 'PENDING',
+    ).length;
+    const failed = transactions.filter(
+      t => t.status?.toUpperCase() === 'FAILED',
+    ).length;
+    return {total, success, pending, failed};
+  };
+
+  const stats = getStats();
+
+  const renderTransaction = ({item}: {item: Transaction}) => {
+    const statusColors = getStatusBadgeColor(item.status);
+    const statusIcon = getStatusIcon(item.status);
+
     return (
-      item.reference_no?.toLowerCase().includes(searchLower) ||
-      item.merchant_id?.toLowerCase().includes(searchLower) ||
-      item.trx_id?.toLowerCase().includes(searchLower) ||
-      item.status?.toLowerCase().includes(searchLower)
+      <View style={styles.transactionCard}>
+        <View style={styles.transactionHeader}>
+          <View style={styles.transactionInfo}>
+            <Text style={styles.referenceNo}>
+              {item.reference_no || item.trx_id}
+            </Text>
+            <Text style={styles.merchantId}>{item.merchant_id}</Text>
+          </View>
+          <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
+        </View>
+        <View style={styles.transactionFooter}>
+          <View
+            style={[
+              styles.statusBadge,
+              {backgroundColor: statusColors.backgroundColor},
+            ]}>
+            <Text style={styles.statusIcon}>{statusIcon}</Text>
+            <Text style={[styles.statusText, {color: statusColors.color}]}>
+              {item.status?.toUpperCase() || 'UNKNOWN'}
+            </Text>
+          </View>
+          <Text style={styles.date}>{formatDate(item.transaction_date)}</Text>
+        </View>
+      </View>
     );
-  });
-
-  const stats = {
-    total: meta.total,
-    success: data.filter(t => t.status?.toUpperCase() === 'SUCCESS').length,
-    pending: data.filter(t => t.status?.toUpperCase() === 'PENDING').length,
-    failed: data.filter(t => t.status?.toUpperCase() === 'FAILED').length,
   };
 
-  const renderTransaction = ({item}: {item: Transaction}) => (
-    <View style={styles.transactionItem}>
-      <View style={styles.transactionRow}>
-        <Text style={styles.transactionId} numberOfLines={1}>
-          {item.reference_no || 'N/A'}
-        </Text>
-        <Text style={styles.transactionAmount}>
-          {formatCurrency(item.amount)}
-        </Text>
-      </View>
-      <Text style={styles.transactionMerchant}>{item.merchant_id}</Text>
-      <View style={styles.transactionFooter}>
-        <View
-          style={[
-            styles.statusBadge,
-            {backgroundColor: getStatusBadgeColor(item.status).backgroundColor},
-          ]}>
-          <Text
-            style={[
-              styles.statusText,
-              {color: getStatusBadgeColor(item.status).color},
-            ]}>
-            {getStatusIcon(item.status)} {item.status || 'Unknown'}
+  const ListHeader = () => (
+    <>
+      {/* Stats Row */}
+      <View style={styles.statsContainer}>
+        <View style={[styles.statCard, {backgroundColor: '#EEF2FF'}]}>
+          <Text style={styles.statLabel}>Total</Text>
+          <Text style={[styles.statValue, {color: '#4F46E5'}]}>
+            {stats.total}
           </Text>
         </View>
-        <Text style={styles.transactionDate}>
-          {formatDate(item.transaction_date)}
-        </Text>
+        <View style={[styles.statCard, {backgroundColor: '#ECFDF5'}]}>
+          <Text style={styles.statLabel}>Sukses</Text>
+          <Text style={[styles.statValue, {color: '#10B981'}]}>
+            {stats.success}
+          </Text>
+        </View>
+        <View style={[styles.statCard, {backgroundColor: '#FEF9C3'}]}>
+          <Text style={styles.statLabel}>Pending</Text>
+          <Text style={[styles.statValue, {color: '#F59E0B'}]}>
+            {stats.pending}
+          </Text>
+        </View>
+        <View style={[styles.statCard, {backgroundColor: '#FEE2E2'}]}>
+          <Text style={styles.statLabel}>Gagal</Text>
+          <Text style={[styles.statValue, {color: '#EF4444'}]}>
+            {stats.failed}
+          </Text>
+        </View>
       </View>
+
+      {/* Search */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Cari transaksi..."
+          placeholderTextColor="#9CA3AF"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+      </View>
+
+      {/* Refresh Button */}
+      <TouchableOpacity style={styles.refreshButton} onPress={onRefresh}>
+        <Text style={styles.refreshButtonText}>Refresh</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  const ListEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyIconContainer}>
+        <Text style={styles.emptyIcon}>📋</Text>
+      </View>
+      <Text style={styles.emptyText}>Belum ada transaksi</Text>
+      <Text style={styles.emptySubtext}>Transaksi akan muncul di sini</Text>
     </View>
   );
 
-  if (loading && !refreshing) {
-    return (
-      <View style={[styles.container, styles.centerContainer]}>
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={styles.emptyText}>Memuat transaksi...</Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
+
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Semua Transaksi</Text>
         <Text style={styles.headerSubtitle}>
@@ -297,88 +192,194 @@ const HomeScreen = () => {
         </Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.statsContainer}>
-        <View style={[styles.statCard, {backgroundColor: '#dbeafe'}]}>
-          <Text style={styles.statLabel}>Total</Text>
-          <Text style={[styles.statValue, {color: '#2563eb'}]}>
-            {stats.total}
-          </Text>
-        </View>
-        <View style={[styles.statCard, {backgroundColor: '#dcfce7'}]}>
-          <Text style={styles.statLabel}>Sukses</Text>
-          <Text style={[styles.statValue, {color: '#16a34a'}]}>
-            {stats.success}
-          </Text>
-        </View>
-        <View style={[styles.statCard, {backgroundColor: '#fef3c7'}]}>
-          <Text style={styles.statLabel}>Pending</Text>
-          <Text style={[styles.statValue, {color: '#ca8a04'}]}>
-            {stats.pending}
-          </Text>
-        </View>
-        <View style={[styles.statCard, {backgroundColor: '#fee2e2'}]}>
-          <Text style={styles.statLabel}>Gagal</Text>
-          <Text style={[styles.statValue, {color: '#dc2626'}]}>
-            {stats.failed}
-          </Text>
-        </View>
-      </ScrollView>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Ionicons name="search" size={18} color="#94a3b8" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Cari transaksi..."
-            value={filter}
-            onChangeText={setFilter}
-            placeholderTextColor="#cbd5e1"
+      {/* Content */}
+      <FlatList
+        data={filteredTransactions}
+        renderItem={renderTransaction}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={ListEmpty}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2563EB']}
           />
-        </View>
-        <TouchableOpacity style={styles.refreshButton} onPress={onRefresh}>
-          <Text style={styles.refreshButtonText}>
-            {refreshing ? 'Refresh...' : 'Refresh'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>⚠️ {error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => loadTransactions(1)}>
-            <Text style={styles.retryButtonText}>Coba Lagi</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {!loading && filteredData.length === 0 ? (
-        <View style={[styles.container, styles.centerContainer]}>
-          <Ionicons name="document-outline" size={48} color="#cbd5e1" />
-          <Text style={styles.emptyText}>
-            {filter ? 'Tidak ada transaksi yang cocok' : 'Tidak ada transaksi'}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredData}
-          renderItem={renderTransaction}
-          keyExtractor={item =>
-            item.id || item.reference_no || Math.random().toString()
-          }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          contentContainerStyle={{paddingBottom: 16}}
-          scrollEnabled={true}
-        />
-      )}
-    </View>
+        }
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  header: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  statLabel: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#1F2937',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  refreshButton: {
+    backgroundColor: '#2563EB',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  refreshButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  transactionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2563EB',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 1},
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  transactionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  transactionInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  referenceNo: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  merchantId: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  amount: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2563EB',
+  },
+  transactionFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  statusIcon: {
+    fontSize: 10,
+    marginRight: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  date: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  emptyIcon: {
+    fontSize: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+});
 
 export default HomeScreen;
