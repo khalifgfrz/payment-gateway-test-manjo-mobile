@@ -13,63 +13,72 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {processPayment, generateSignature} from '../services/api';
+import {
+  processPayment,
+  generateSignature,
+  PaymentResponse,
+} from '../services/api';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {formatCurrency} from '../utils/helpers';
 
 const PaymentScreen = () => {
-  const [referenceNo, setReferenceNo] = useState('');
-  const [amount, setAmount] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    referenceNo: '',
+    amount: '',
+  });
 
-  const validateForm = () => {
-    if (!referenceNo.trim()) {
-      Alert.alert('Error', 'Reference No wajib diisi');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState<PaymentResponse | null>(null);
+
+  const validateForm = (): boolean => {
+    if (!form.referenceNo.trim()) {
+      setError('Reference No wajib diisi');
       return false;
     }
-    if (!amount.trim() || isNaN(Number(amount))) {
-      Alert.alert('Error', 'Amount harus berupa angka yang valid');
+    if (!form.amount.trim()) {
+      setError('Amount wajib diisi');
+      return false;
+    }
+    if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
+      setError('Amount harus berupa angka positif');
       return false;
     }
     return true;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) return;
+  const handlePay = async () => {
+    setError('');
+    setMessage(null);
+
+    if (!validateForm()) {
+      return;
+    }
 
     setLoading(true);
+
     try {
-      // Generate signature first
-      const signatureResponse = await generateSignature('payment', {
-        referenceNo,
-        amount,
+      const sig = await generateSignature('payment', {
+        originalReferenceNo: form.referenceNo,
+        amountValue: form.amount,
       });
 
-      // Then process payment
-      const response = await processPayment(
-        referenceNo,
-        amount,
-        signatureResponse.signature,
+      const paymentResult = await processPayment(
+        form.referenceNo,
+        form.amount,
+        sig.signature,
       );
 
-      Alert.alert(
-        'Sukses',
-        `Pembayaran berhasil diproses!\n\nPesan: ${response.responseMessage}\nAmount: ${formatCurrency(Number(amount))}`,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setReferenceNo('');
-              setAmount('');
-            },
-          },
-        ],
-      );
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Gagal memproses pembayaran');
+      setMessage(paymentResult);
+      setForm({referenceNo: '', amount: ''});
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Gagal memproses pembayaran');
     } finally {
       setLoading(false);
     }
   };
+
+  const isSuccess = message?.responseCode === '0000';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -98,8 +107,8 @@ const PaymentScreen = () => {
                 style={styles.input}
                 placeholder="Masukkan nomor referensi"
                 placeholderTextColor="#9CA3AF"
-                value={referenceNo}
-                onChangeText={setReferenceNo}
+                value={form.referenceNo}
+                onChangeText={value => setForm({...form, referenceNo: value})}
               />
             </View>
 
@@ -109,18 +118,60 @@ const PaymentScreen = () => {
                 style={styles.input}
                 placeholder="Masukkan jumlah pembayaran"
                 placeholderTextColor="#9CA3AF"
-                value={amount}
-                onChangeText={setAmount}
+                value={form.amount}
+                onChangeText={value => setForm({...form, amount: value})}
                 keyboardType="numeric"
               />
             </View>
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <Ionicons name="warning" size={16} color="#991b1b" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+
+            {message && (
+              <View
+                style={[
+                  styles.successContainer,
+                  {
+                    backgroundColor: isSuccess ? '#dcfce7' : '#fef3c7',
+                    borderColor: isSuccess ? '#86efac' : '#fcd34d',
+                  },
+                ]}>
+                <Ionicons
+                  name={isSuccess ? 'checkmark-circle' : 'warning'}
+                  size={20}
+                  color={isSuccess ? '#166534' : '#b45309'}
+                />
+                <View style={styles.successMessage}>
+                  <Text
+                    style={[
+                      styles.successTitle,
+                      {color: isSuccess ? '#166534' : '#b45309'},
+                    ]}>
+                    {message.responseMessage}
+                  </Text>
+                  {message.responseCode && (
+                    <Text
+                      style={[
+                        styles.successText,
+                        {color: isSuccess ? '#166534' : '#b45309'},
+                      ]}>
+                      Code: {message.responseCode}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
 
             <TouchableOpacity
               style={[
                 styles.submitButton,
                 loading && styles.submitButtonDisabled,
               ]}
-              onPress={handleSubmit}
+              onPress={handlePay}
               disabled={loading}>
               {loading ? (
                 <ActivityIndicator color="#FFFFFF" />
@@ -175,6 +226,40 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 100,
+  },
+  errorContainer: {
+    backgroundColor: '#fee2e2',
+    borderColor: '#fca5a5',
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  errorText: {
+    color: '#991b1b',
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+  },
+  successContainer: {
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  successMessage: {
+    flex: 1,
+  },
+  successTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  successText: {
+    fontSize: 12,
   },
   formCard: {
     backgroundColor: '#FFFFFF',

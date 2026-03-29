@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_BASE_URL = 'http://10.0.2.2:8080/api/v1';
+import {API_BASE_URL} from '@env';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -20,7 +19,12 @@ export interface Transaction {
   reference_no?: string;
   status?: string;
   transaction_date?: string;
-  paid_date?: string;
+  paid_date?:
+    | {
+        String?: string;
+        Valid?: boolean;
+      }
+    | string;
 }
 
 export interface ApiResponse {

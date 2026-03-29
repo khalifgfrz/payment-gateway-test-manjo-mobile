@@ -49,14 +49,36 @@ export const formatCurrency = (value: number | string) => {
   }).format(num);
 };
 
-export const formatDate = (dateString?: string) => {
-  if (!dateString) return '-';
+export const formatDate = (dateInput?: any) => {
+  if (!dateInput) return '-';
+
+  let dateString = '';
+
+  if (typeof dateInput === 'object' && dateInput !== null) {
+    if (dateInput.Valid && typeof dateInput.String === 'string') {
+      dateString = dateInput.String;
+    } else {
+      return '-';
+    }
+  } else if (typeof dateInput === 'string') {
+    dateString = dateInput;
+  }
+
+  if (!dateString || dateString.trim() === '') return '-';
+
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('id-ID', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
+  if (isNaN(date.getTime())) return '-';
+
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(date);
+  } catch (e) {
+    return '-';
+  }
 };

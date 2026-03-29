@@ -139,7 +139,8 @@ const TrackerScreen = () => {
               </Text>
             </View>
 
-            {transaction.paid_date && (
+            {(typeof transaction.paid_date === 'string' ||
+              (transaction.paid_date as any)?.Valid) && (
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Dibayar</Text>
                 <Text style={styles.detailValue}>
