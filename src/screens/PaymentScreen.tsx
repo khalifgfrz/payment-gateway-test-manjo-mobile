@@ -158,9 +158,7 @@ const PaymentScreen = () => {
                       style={[
                         styles.successText,
                         {color: isSuccess ? '#166534' : '#b45309'},
-                      ]}>
-                      Code: {message.responseCode}
-                    </Text>
+                      ]}></Text>
                   )}
                 </View>
               </View>
