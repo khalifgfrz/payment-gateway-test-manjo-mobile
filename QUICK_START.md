@@ -2,7 +2,21 @@
 
 ## 🎯 5-Minute Setup
 
-### 1. Install & Run Backend
+### 1. Fix Dependencies (If you have expo-font error)
+```bash
+# If you're seeing "Unable to resolve module expo-font" error:
+
+# Windows:
+.\scripts\fix-dependencies.bat
+
+# macOS/Linux:
+bash scripts/fix-dependencies.sh
+
+# Or manually:
+rm -rf node_modules && npm install && npm start -- --reset-cache
+```
+
+### 2. Install & Run Backend
 ```bash
 # Terminal 1 - Backend
 cd ../backend  # or wherever your backend is
@@ -11,19 +25,19 @@ npm start
 # Should output: Server running on http://localhost:8080
 ```
 
-### 2. Install Dependencies
+### 3. Install Dependencies
 ```bash
 # Terminal 2 - Mobile App
 npm install
 ```
 
-### 3. Start Metro Bundler
+### 4. Start Metro Bundler
 ```bash
 # Terminal 2
 npm start
 ```
 
-### 4. Run Application
+### 5. Run Application
 ```bash
 # Terminal 3 - Run app
 # For iOS:
@@ -66,7 +80,9 @@ cd android && ./gradlew clean && cd ..  # Clean gradle
 
 | Error | Fix |
 |-------|-----|
+| `Unable to resolve module expo-font` | Run script: `.\scripts\fix-dependencies.bat` (Windows) or `bash scripts/fix-dependencies.sh` (Mac/Linux) |
 | `Cannot find module 'react-native-safe-area-context'` | Run `npm install` |
+| `Module does not exist in Haste module map` | Run `npm start -- --reset-cache` |
 | `Gagal memuat transaksi` | Start backend at `localhost:8080` |
 | White screen on startup | Press `r` in Metro terminal to reload |
 | Metro cache issue | Run `npm start -- --reset-cache` |
@@ -106,6 +122,7 @@ src/utils/helpers.ts    ← Utilities
 
 | Document | Content |
 |----------|---------|
+| **ERROR_FIX_GUIDE.md** | expo-font error solutions (READ THIS FIRST if you have errors) |
 | **SETUP_INSTRUCTIONS.md** | Complete step-by-step setup (start here) |
 | **COMPATIBILITY_FIXES.md** | React Native 0.73 technical details |
 | **TROUBLESHOOTING.md** | Common issues & detailed solutions |
@@ -132,15 +149,43 @@ Before pushing to production:
 
 ## 🆘 Emergency Fixes
 
+### For expo-font errors:
 ```bash
-# Nuclear option - clean everything
+# Windows:
+rmdir /s /q node_modules
+npm cache clean --force
+npm install
+npm install expo-font @expo/vector-icons --save
+npm start -- --reset-cache
+
+# macOS/Linux:
+rm -rf node_modules
+npm cache clean --force
+npm install
+npm install expo-font @expo/vector-icons --save
+npm start -- --reset-cache
+```
+
+### Nuclear option - clean everything:
+```bash
+# macOS/Linux
 rm -rf node_modules ios/Pods android/.gradle build/
 npm cache clean --force
 npm install
 cd ios && pod install && cd ..
 npm start -- --reset-cache
 
-# Then run app again
+# Windows
+rmdir /s /q node_modules
+rmdir /s /q ios\Pods
+npm cache clean --force
+npm install
+cd ios && pod install && cd ..
+npm start -- --reset-cache
+```
+
+Then run app again:
+```bash
 npm run ios  # or npm run android
 ```
 
