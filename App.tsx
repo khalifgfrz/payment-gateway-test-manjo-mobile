@@ -26,7 +26,7 @@ function App(): React.JSX.Element {
       <NavigationContainer>
         <Tab.Navigator
           screenOptions={({route}) => ({
-            headerShown: false, // Matikan header karena screen punya header sendiri
+            headerShown: false,
             tabBarActiveTintColor: '#2563EB',
             tabBarInactiveTintColor: '#9CA3AF',
             tabBarStyle: {

@@ -9,7 +9,6 @@ const apiClient = axios.create({
   },
 });
 
-// Types
 export interface Transaction {
   id: string;
   merchant_id: string;
@@ -47,7 +46,6 @@ export interface PaymentResponse {
   responseCode?: string;
 }
 
-// API Calls
 export const getTransactions = async (page: number = 1) => {
   try {
     const response = await apiClient.get<ApiResponse>(
