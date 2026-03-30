@@ -16,6 +16,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 import Share from 'react-native-share';
 import {generateSignature, generateQR, QRResponse} from '../services/api';
+import {AxiosError} from 'axios';
 
 const GenerateQRScreen = () => {
   const [form, setForm] = useState({
@@ -47,10 +48,6 @@ const GenerateQRScreen = () => {
       setError('Amount wajib diisi');
       return false;
     }
-    if (isNaN(Number(form.amount)) || Number(form.amount) <= 0) {
-      setError('Amount harus berupa angka positif');
-      return false;
-    }
     return true;
   };
 
@@ -79,10 +76,14 @@ const GenerateQRScreen = () => {
       );
 
       setResult(qrResult);
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || err.message || 'Gagal membuat QR Code',
-      );
+    } catch (err) {
+      const axiosError = err as AxiosError<{message?: string}>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        axiosError.message ||
+        'Gagal membuat QR';
+
+      setError(`${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -122,7 +123,6 @@ const GenerateQRScreen = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Generate QR Code</Text>
         <Text style={styles.headerSubtitle}>
